@@ -1,24 +1,56 @@
-//连接数据库 执行相关用法
-var models = require('../db');
-var express = require('express');
+// 执行相关用法
+// var models = require('../db');
+var express = require("express");
 var router = express.Router();
-var mysql = require('mysql');
-var $sql = require('../sqlMap');
+var mysql = require("mysql");
+var $sql = require("../sqlMap");
+const jwt = require('jsonwebtoken');
+var conn = require('../db');
+const secretkey = 'secretkey';
+const dynamicAdmin = require('../routes/index');
 
-// 连接数据库
-var conn = mysql.createConnection(models.mysql);
+//获取管理员状态
+router.post('/getAdminer', (req, res) => {
+  var sql = $sql.admin.gets;
+  var params = req.body;
+  conn.query(sql, [params.name, params.passwd], function (err, result) {
+    if (err) {
+      throw err;
+    }
+    if (JSON.stringify(result) != '[]') {
+      var token = jwt.sign({
+        name: params.name
+      }, secretkey, {
+        expiresIn: 60 * 8
+      });
+      var adminRole = JSON.parse(JSON.stringify(result))[0].role;
 
-conn.connect();
-var jsonWrite = function (res, ret) {
-  if (typeof ret === 'undefined') {
-    res.json({
-      code: '1',
-      msg: '操作失败'
-    });
-  } else {
-    res.json(ret);
-  }
-};
+      res.json({
+        resultCode: 200,
+        message: '登录成功',
+        role: adminRole,
+        token: token,
+        info: result,
+      })
+
+      // res.json({
+      //   resultCode: 200,
+      //   message: '登录成功',
+      //   token: token,
+      //   info: result
+      // })
+
+    } else {
+      res.json({
+        resultCode: 401,
+        message: '账号或密码有误',
+        info: result
+      })
+    }
+  })
+})
+
+
 
 // 增加管理接口
 router.post('/addAdmin', (req, res) => {
@@ -30,7 +62,7 @@ router.post('/addAdmin', (req, res) => {
       console.log(err);
     }
     if (result) {
-      jsonWrite(res, result);
+      res.json(result);
     }
   })
 });
@@ -43,11 +75,26 @@ router.get('/getAdmin', (req, res) => {
       console.log(err);
     }
     if (result) {
-      console.log(result);
-      jsonWrite(res, result);
+      // console.log(result);
+      res.json(result);
     }
   })
 });
+//查询管理接口
+router.get('/getAdmin', (req, res) => {
+  var listStr = `select * from admin`;
+  conn.query(listStr, function (err, result) {
+    if (err) throw err;
+    res.json({
+      message: '登录成功',
+      resultCode: 200,
+      info: result
+    })
+  })
+})
+
+
+
 //删除管理接口
 router.post('/delAdmin', (req, res) => {
   var params = req.body;
@@ -59,7 +106,7 @@ router.post('/delAdmin', (req, res) => {
       console.log(err);
     }
     if (result) {
-      jsonWrite(res, result);
+      res.json(result);
     }
   })
 })
@@ -74,7 +121,7 @@ router.post('/updateAdmin', (req, res) => {
       console.log(err);
     }
     if (result) {
-      jsonWrite(res, result);
+      res.json(result);
     }
   })
 

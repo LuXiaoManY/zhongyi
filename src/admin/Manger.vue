@@ -1,9 +1,10 @@
 <template>
     <div class="Manger">
-        <h3>管理员详情</h3>
+       
        
         <div class="Manger_content">
-        <el-button  @click="dialogcreateVisible = true" class="add"  icon="el-icon-circle-plus-outline" circle></el-button>
+          
+        <el-button  @click="dialogcreateVisible = true" class="add" type="primary" plain>添加</el-button>
         <el-table :data="tableData" style="width: 100%">
                 <el-table-column label="日期" width="300">
                 <template slot-scope="scope">
@@ -65,6 +66,7 @@
     </div>
 </template>
 <script>
+import { mapGetters, mapState, mapActions } from "vuex";
 import time from "../../tools/time.js";
 import crypto from "../../tools/crypto.js";
 export default {
@@ -75,8 +77,8 @@ export default {
       dialogupdateVisible: false, //修改管理员信息是否弹框标志
       mangerType: [
         //管理员类型
-        { value: "普通管理员", label: "普通管理员" },
-        { value: "超级管理员", label: "超级管理员" }
+        { value: "General", label: "普通管理员" },
+        { value: "Super", label: "超级管理员" }
       ],
       manger: [
         //添加管理员数组
@@ -85,7 +87,7 @@ export default {
           name: "",
           passwd: "",
           password: "",
-          role: ""
+          role: []
         }
       ],
       tableData: [
@@ -116,7 +118,7 @@ export default {
   methods: {
     // 修改管理员信息
     handleEdit(index, row) {
-      console.log(index, row);
+      // console.log(index, row);
       this.updatemanger.id = row.Id;
       this.updatemanger.name = row.name;
       this.updatemanger.passwd = row.passwd;
